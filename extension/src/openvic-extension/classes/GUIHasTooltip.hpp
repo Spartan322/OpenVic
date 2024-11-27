@@ -5,8 +5,8 @@
 
 #include <openvic-simulation/utility/Getters.hpp>
 
-#include "openvic-extension/singletons/MenuSingleton.hpp"
-#include "openvic-extension/utility/ClassBindings.hpp"
+#include <openvic-extension/singletons/MenuSingleton.hpp>
+#include <openvic-extension/utility/ClassBindings.hpp>
 
 /* To add tooltip functionality to a class:
  *  - the class must be derived from Control.
@@ -17,20 +17,21 @@
  *  - initialise tooltip_active to false in the class' constructor. */
 
 #define GUI_TOOLTIP_DEFINITIONS \
-	public: \
-		void set_tooltip_string_and_substitution_dict( \
-			godot::String const& new_tooltip_string, godot::Dictionary const& new_tooltip_substitution_dict \
-		); \
-		void set_tooltip_string(godot::String const& new_tooltip_string); \
-		void set_tooltip_substitution_dict(godot::Dictionary const& new_tooltip_substitution_dict); \
-		void clear_tooltip(); \
-	private: \
-		godot::String PROPERTY(tooltip_string); \
-		godot::Dictionary PROPERTY(tooltip_substitution_dict); \
-		bool PROPERTY_CUSTOM_PREFIX(tooltip_active, is); \
-		void _tooltip_notification(int what); \
-		void _set_tooltip_active(bool new_tooltip_active); \
-		void _set_tooltip_visibility(bool visible);
+public: \
+	void set_tooltip_string_and_substitution_dict( \
+		godot::String const& new_tooltip_string, godot::Dictionary const& new_tooltip_substitution_dict \
+	); \
+	void set_tooltip_string(godot::String const& new_tooltip_string); \
+	void set_tooltip_substitution_dict(godot::Dictionary const& new_tooltip_substitution_dict); \
+	void clear_tooltip(); \
+\
+private: \
+	godot::String PROPERTY(tooltip_string); \
+	godot::Dictionary PROPERTY(tooltip_substitution_dict); \
+	bool PROPERTY_CUSTOM_PREFIX(tooltip_active, is); \
+	void _tooltip_notification(int what); \
+	void _set_tooltip_active(bool new_tooltip_active); \
+	void _set_tooltip_visibility(bool visible);
 
 #define GUI_TOOLTIP_IMPLEMENTATIONS(CLASS) \
 	void CLASS::set_tooltip_string_and_substitution_dict( \
@@ -103,7 +104,8 @@
 	OV_BIND_METHOD(CLASS::get_tooltip_substitution_dict); \
 	OV_BIND_METHOD(CLASS::set_tooltip_substitution_dict, { "new_tooltip_substitution_dict" }); \
 	OV_BIND_METHOD( \
-		CLASS::set_tooltip_string_and_substitution_dict, { "new_tooltip_string", "new_tooltip_substitution_dict" } \
+		CLASS::set_tooltip_string_and_substitution_dict, \
+		{ "new_tooltip_string", "new_tooltip_substitution_dict" } \
 	); \
 	OV_BIND_METHOD(CLASS::clear_tooltip); \
 	OV_BIND_METHOD(CLASS::is_tooltip_active); \

@@ -1,6 +1,6 @@
 #include "GUIMaskedFlag.hpp"
 
-#include "openvic-extension/utility/ClassBindings.hpp"
+#include <openvic-extension/utility/ClassBindings.hpp>
 
 using namespace godot;
 using namespace OpenVic;
@@ -11,7 +11,9 @@ void GUIMaskedFlag::_bind_methods() {
 	OV_BIND_METHOD(GUIMaskedFlag::set_gfx_masked_flag_name, { "gfx_masked_flag_name" });
 	OV_BIND_METHOD(GUIMaskedFlag::get_gfx_masked_flag_name);
 
-	OV_BIND_METHOD(GUIMaskedFlag::set_flag_country_name_and_type, { "flag_country_name", "flag_type" });
+	OV_BIND_METHOD(
+		GUIMaskedFlag::set_flag_country_name_and_type, { "flag_country_name", "flag_type" }
+	);
 	OV_BIND_METHOD(GUIMaskedFlag::set_flag_country_name, { "flag_country_name" });
 	OV_BIND_METHOD(GUIMaskedFlag::get_flag_country_name);
 	OV_BIND_METHOD(GUIMaskedFlag::get_flag_type);

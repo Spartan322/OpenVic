@@ -2,9 +2,9 @@
 
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#include "openvic-extension/utility/ClassBindings.hpp"
-#include "openvic-extension/utility/UITools.hpp"
-#include "openvic-extension/utility/Utilities.hpp"
+#include <openvic-extension/utility/ClassBindings.hpp>
+#include <openvic-extension/utility/UITools.hpp>
+#include <openvic-extension/utility/Utilities.hpp>
 
 using namespace OpenVic;
 using namespace godot;
@@ -16,7 +16,9 @@ Error GUIOverlappingElementsBox::_update_child_positions() {
 		return OK;
 	}
 
-	const auto _get_child = [this](int32_t index) -> Control* { return Object::cast_to<Control>(get_child(index)); };
+	const auto _get_child = [this](int32_t index) -> Control* {
+		return Object::cast_to<Control>(get_child(index));
+	};
 
 	const float box_width = get_size().x;
 	const float child_width = _get_child(0)->get_size().x;
@@ -32,20 +34,14 @@ Error GUIOverlappingElementsBox::_update_child_positions() {
 	Error err = OK;
 	using enum GUI::AlignedElement::format_t;
 	switch (gui_overlapping_elements_box->get_format()) {
-		case left:
-			break;
-		case centre:
-			starting_x = (box_width - total_width) / 2;
-			break;
-		case right:
-			starting_x = box_width - total_width;
-			break;
-		default:
-			UtilityFunctions::push_error(
-				"Invalid GUIOverlappingElementsBox alignment: ",
-				static_cast<int32_t>(gui_overlapping_elements_box->get_format())
-			);
-			err = FAILED;
+	case left:   break;
+	case centre: starting_x = (box_width - total_width) / 2; break;
+	case right:  starting_x = box_width - total_width; break;
+	default:
+		UtilityFunctions::push_error(
+			"Invalid GUIOverlappingElementsBox alignment: ", static_cast<int32_t>(gui_overlapping_elements_box->get_format())
+		);
+		err = FAILED;
 	}
 
 	for (int32_t index = 0; index < child_count; ++index) {
@@ -63,7 +59,8 @@ void GUIOverlappingElementsBox::_bind_methods() {
 	OV_BIND_METHOD(GUIOverlappingElementsBox::get_gui_overlapping_elements_box_name);
 
 	OV_BIND_METHOD(
-		GUIOverlappingElementsBox::set_gui_child_element_name, { "gui_child_element_file", "gui_child_element_name" }
+		GUIOverlappingElementsBox::set_gui_child_element_name,
+		{ "gui_child_element_file", "gui_child_element_name" }
 	);
 	OV_BIND_METHOD(GUIOverlappingElementsBox::get_gui_child_element_name);
 }
@@ -75,7 +72,7 @@ void GUIOverlappingElementsBox::_notification(int what) {
 }
 
 GUIOverlappingElementsBox::GUIOverlappingElementsBox()
-  : gui_overlapping_elements_box { nullptr }, gui_child_element { nullptr } {}
+	: gui_overlapping_elements_box { nullptr }, gui_child_element { nullptr } {}
 
 void GUIOverlappingElementsBox::clear() {
 	clear_children();
@@ -101,9 +98,8 @@ Error GUIOverlappingElementsBox::set_child_count(int32_t new_count) {
 		return OK;
 	} else {
 		ERR_FAIL_NULL_V_MSG(
-			gui_child_element, FAILED, vformat(
-				"GUIOverlappingElementsBox child element is null (child_count = %d, new_count = %d)", child_count, new_count
-			)
+			gui_child_element, FAILED,
+			vformat("GUIOverlappingElementsBox child element is null (child_count = %d, new_count = %d)", child_count, new_count)
 		);
 		Error err = OK;
 		const String gui_child_element_name = Utilities::std_to_godot_string(gui_child_element->get_name()) + "_";
@@ -115,9 +111,10 @@ Error GUIOverlappingElementsBox::set_child_count(int32_t new_count) {
 				err = FAILED;
 			}
 			ERR_FAIL_NULL_V_MSG(
-				child, FAILED, vformat(
-					"Failed to generate GUIOverlappingElementsBox child element %s (child_count = %d, new_count = %d)",
-					name, child_count, new_count
+				child, FAILED,
+				vformat(
+					"Failed to generate GUIOverlappingElementsBox child element %s (child_count = %d, new_count = %d)", name,
+					child_count, new_count
 				)
 			);
 
@@ -153,9 +150,8 @@ Error GUIOverlappingElementsBox::set_gui_overlapping_elements_box(
 }
 
 String GUIOverlappingElementsBox::get_gui_overlapping_elements_box_name() const {
-	return gui_overlapping_elements_box != nullptr
-		? Utilities::std_to_godot_string(gui_overlapping_elements_box->get_name())
-		: String {};
+	return gui_overlapping_elements_box != nullptr ? Utilities::std_to_godot_string(gui_overlapping_elements_box->get_name())
+												   : String {};
 }
 
 Error GUIOverlappingElementsBox::set_gui_child_element(GUI::Element const* new_gui_child_element) {

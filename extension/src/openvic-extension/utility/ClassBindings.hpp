@@ -8,12 +8,13 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 
-#include "openvic-extension/utility/StringLiteral.hpp"
+#include <openvic-extension/utility/StringLiteral.hpp>
 
 namespace godot {
 	class Object;
 }
 
+/* clang-format off */
 #define OV_BIND_METHOD(Function, ...) \
 	::OpenVic::detail::bind_method<::OpenVic::detail::get_function_name<#Function>()>(&Function __VA_OPT__(, ) __VA_ARGS__)
 
@@ -26,6 +27,7 @@ namespace godot {
 	::OpenVic::detail::bind_static_method<ClassType, ::OpenVic::detail::get_function_name<#Function>()>( \
 		&Function __VA_OPT__(, ) __VA_ARGS__ \
 	)
+/* clang-format on */
 
 namespace OpenVic::detail {
 	template<typename Func>

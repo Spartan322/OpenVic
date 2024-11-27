@@ -142,7 +142,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
 
-    name: Peform Godot Debug Checks
+    name: Perform Godot Debug Checks
     steps:
       - name: Checkout project
         uses: actions/checkout@v4.1.1

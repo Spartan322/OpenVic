@@ -15,10 +15,10 @@ using namespace OpenVic;
  * or normal integer string if less than the smallest suffix. */
 String Utilities::int_to_string_suffixed(int64_t val) {
 	static const std::vector<std::pair<int64_t, String>> suffixes {
-		{ 1'000'000'000'000, "T" },
+		{ 1'000'000'000'000, "T" }, //
 		{ 1'000'000'000, "B" },
 		{ 1'000'000, "M" },
-		{ 1'000, "k" }
+		{ 1000, "k" } //
 	};
 	static constexpr int64_t decimal_places_multiplier = 100;
 	const bool negative = val < 0;
@@ -29,8 +29,8 @@ String Utilities::int_to_string_suffixed(int64_t val) {
 		if (val >= suffix_val) {
 			const int64_t whole = val / suffix_val;
 			const int64_t frac = (val * decimal_places_multiplier / suffix_val) % decimal_places_multiplier;
-			return (negative ? "-" : "") + String::num_int64(whole) + "." +
-				(frac < 10 ? "0" : "") + String::num_int64(frac) + suffix_str;
+			return (negative ? "-" : "") + String::num_int64(whole) + "." + (frac < 10 ? "0" : "") + String::num_int64(frac) +
+				suffix_str;
 		}
 	}
 	return (negative ? "-" : "") + String::num_int64(val);

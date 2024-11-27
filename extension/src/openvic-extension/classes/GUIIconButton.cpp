@@ -1,6 +1,6 @@
 #include "GUIIconButton.hpp"
 
-#include "openvic-extension/utility/ClassBindings.hpp"
+#include <openvic-extension/utility/ClassBindings.hpp>
 
 using namespace godot;
 using namespace OpenVic;
@@ -8,7 +8,10 @@ using namespace OpenVic;
 void GUIIconButton::_bind_methods() {
 	OV_BIND_METHOD(GUIIconButton::get_gfx_sprite_texture);
 
-	OV_BIND_METHOD(GUIIconButton::set_gfx_texture_sprite_name, { "gfx_texture_sprite_name", "icon" }, DEFVAL(GFX::NO_FRAMES));
+	OV_BIND_METHOD(
+		GUIIconButton::set_gfx_texture_sprite_name, { "gfx_texture_sprite_name", "icon" },
+		DEFVAL(GFX::NO_FRAMES)
+	);
 	OV_BIND_METHOD(GUIIconButton::get_gfx_texture_sprite_name);
 
 	OV_BIND_METHOD(GUIIconButton::set_icon_index, { "icon_index" });

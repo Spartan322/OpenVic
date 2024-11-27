@@ -29,9 +29,9 @@
 #include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 
-#include "openvic-extension/utility/ClassBindings.hpp"
-#include "openvic-extension/utility/UITools.hpp"
-#include "openvic-extension/utility/Utilities.hpp"
+#include <openvic-extension/utility/ClassBindings.hpp>
+#include <openvic-extension/utility/UITools.hpp>
+#include <openvic-extension/utility/Utilities.hpp>
 
 using namespace godot;
 using namespace OpenVic;
@@ -52,13 +52,16 @@ using namespace OpenVic;
 
 void GUINode::_bind_methods() {
 	OV_BIND_SMETHOD(generate_gui_element, { "gui_scene", "gui_element", "name" }, DEFVAL(String {}));
-	OV_BIND_METHOD(GUINode::add_gui_element, { "gui_scene", "gui_element", "name" }, DEFVAL(String {}));
+	OV_BIND_METHOD(
+		GUINode::add_gui_element, { "gui_scene", "gui_element", "name" }, DEFVAL(String {})
+	);
 	OV_BIND_SMETHOD(get_gui_position, { "gui_scene", "gui_position" });
 
 	OV_BIND_METHOD(GUINode::get_click_mask);
 	OV_BIND_METHOD(GUINode::set_click_mask, { "mask" });
 	ADD_PROPERTY(
-		PropertyInfo(Variant::OBJECT, "click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_click_mask", "get_click_mask"
+		PropertyInfo(Variant::OBJECT, "click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"),
+		"set_click_mask", "get_click_mask"
 	);
 
 	OV_BIND_METHOD(GUINode::set_click_mask_from_nodepaths, { "paths" });
@@ -161,9 +164,8 @@ Ref<Texture2D> GUINode::get_texture_from_node(Node* node) {
 		);
 		const Ref<StyleBoxTexture> stylebox_texture = stylebox;
 		ERR_FAIL_NULL_V_MSG(
-			stylebox_texture, nullptr, vformat(
-				"Failed to cast StyleBox %s from GUIButton %s to type StyleBoxTexture", theme_name_normal, node->get_name()
-			)
+			stylebox_texture, nullptr,
+			vformat("Failed to cast StyleBox %s from GUIButton %s to type StyleBoxTexture", theme_name_normal, node->get_name())
 		);
 		const Ref<Texture2D> result = stylebox_texture->get_texture();
 		ERR_FAIL_NULL_V_MSG(
@@ -173,9 +175,7 @@ Ref<Texture2D> GUINode::get_texture_from_node(Node* node) {
 		return result;
 	}
 	ERR_FAIL_V_MSG(
-		nullptr, vformat(
-			"Failed to cast node %s from type %s to TextureRect or GUIButton", node->get_name(), node->get_class()
-		)
+		nullptr, vformat("Failed to cast node %s from type %s to TextureRect or GUIButton", node->get_name(), node->get_class())
 	);
 }
 
