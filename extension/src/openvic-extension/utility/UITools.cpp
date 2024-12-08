@@ -1,7 +1,9 @@
 #include "UITools.hpp"
+#include <cctype>
 
 #include <godot_cpp/classes/color_rect.hpp>
 #include <godot_cpp/classes/line_edit.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/panel.hpp>
 #include <godot_cpp/classes/style_box_empty.hpp>
 #include <godot_cpp/classes/style_box_texture.hpp>
@@ -22,6 +24,11 @@
 #include "openvic-extension/singletons/AssetManager.hpp"
 #include "openvic-extension/singletons/GameSingleton.hpp"
 #include "openvic-extension/utility/Utilities.hpp"
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/input_event_key.hpp"
+#include "godot_cpp/classes/shortcut.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
 
 using namespace godot;
 using namespace OpenVic;
@@ -58,6 +65,43 @@ GUI::Position const* UITools::get_gui_position(String const& gui_scene, String c
 	GUI::Position const* position = scene->get_scene_position_by_identifier(Utilities::godot_to_std_string(gui_position));
 	ERR_FAIL_NULL_V_MSG(position, nullptr, vformat("Failed to find GUI position %s in GUI scene %s", gui_position, gui_scene));
 	return position;
+}
+
+static Key get_keycode_from_shortcut_key(String const& key) {
+	Key result = OS::get_singleton()->find_keycode_from_string(key);
+	if (result != godot::KEY_UNKNOWN) {
+		return result;
+	}
+
+	if (key.nocasecmp_to("DEL") == 0) {
+		return Key::KEY_DELETE;
+	}
+
+	if (key.nocasecmp_to("PAGE_UP")) {
+		return Key::KEY_PAGEUP;
+	}
+
+	if (key.nocasecmp_to("PAGE_DOWN")) {
+		return Key::KEY_PAGEDOWN;
+	}
+
+	if (key.casecmp_to("+")) {
+		return Key::KEY_PLUS;
+	}
+
+	if (key.casecmp_to("-")) {
+		return Key::KEY_MINUS;
+	}
+
+	if (key.casecmp_to(">")) {
+		return Key::KEY_GREATER;
+	}
+
+	if (key.casecmp_to("<")) {
+		return Key::KEY_LESS;
+	}
+
+	return result;
 }
 
 /* GUI::Element tree -> godot::Control tree conversion code below: */
@@ -217,9 +261,15 @@ static bool generate_icon(generate_gui_args_t&& args) {
 static bool generate_button(generate_gui_args_t&& args) {
 	GUI::Button const& button = static_cast<GUI::Button const&>(args.element);
 
-	// TODO - shortcut, clicksound, rotation (?)
+	// TODO - clicksound, rotation (?)
 	const String button_name = Utilities::std_to_godot_string(button.get_name());
+	const String shortcut_key_name = Utilities::std_to_godot_string(button.get_shortcut());
+	const Key shortcut_key = get_keycode_from_shortcut_key(shortcut_key_name);
 
+	ERR_FAIL_COND_V_MSG(
+		shortcut_key == Key::KEY_UNKNOWN, false,
+		vformat("Unknown shortcut key '%s' for GUI button %s", shortcut_key_name, button_name)
+	);
 	ERR_FAIL_NULL_V_MSG(button.get_sprite(), false, vformat("Null sprite for GUI button %s", button_name));
 
 	GUIButton* gui_button = nullptr;
@@ -266,6 +316,23 @@ static bool generate_button(generate_gui_args_t&& args) {
 		ret &= gui_button->set_gfx_font(button.get_font()) == OK;
 	}
 
+	Ref<InputEventKey> key_event;
+	key_event.instantiate();
+	key_event->set_keycode(shortcut_key);
+	if (shortcut_key >= Key::KEY_A && shortcut_key <= Key::KEY_Z) {
+		key_event->set_shift_pressed(std::isupper(button.get_shortcut()[0]));
+	}
+
+	Array event_array;
+	event_array.append(key_event);
+
+	Ref<Shortcut> shortcut;
+	shortcut.instantiate();
+	shortcut->set_events(event_array);
+
+	gui_button->set_shortcut(shortcut);
+	gui_button->set_shortcut_feedback(false);
+
 	args.result = gui_button;
 	return ret;
 }
@@ -273,9 +340,14 @@ static bool generate_button(generate_gui_args_t&& args) {
 static bool generate_checkbox(generate_gui_args_t&& args) {
 	GUI::Checkbox const& checkbox = static_cast<GUI::Checkbox const&>(args.element);
 
-	// TODO - shortcut
 	const String checkbox_name = Utilities::std_to_godot_string(checkbox.get_name());
+	const String shortcut_key_name = Utilities::std_to_godot_string(checkbox.get_shortcut());
+	const Key shortcut_key = get_keycode_from_shortcut_key(shortcut_key_name);
 
+	ERR_FAIL_COND_V_MSG(
+		shortcut_key == Key::KEY_UNKNOWN, false,
+		vformat("Unknown shortcut key '%s' for GUI button %s", shortcut_key_name, checkbox_name)
+	);
 	ERR_FAIL_NULL_V_MSG(checkbox.get_sprite(), false, vformat("Null sprite for GUI checkbox %s", checkbox_name));
 
 	GFX::IconTextureSprite const* texture_sprite = checkbox.get_sprite()->cast_to<GFX::IconTextureSprite>();
@@ -305,6 +377,23 @@ static bool generate_checkbox(generate_gui_args_t&& args) {
 	if (checkbox.get_font() != nullptr) {
 		ret &= gui_icon_button->set_gfx_font(checkbox.get_font()) == OK;
 	}
+
+	Ref<InputEventKey> key_event;
+	key_event.instantiate();
+	key_event->set_keycode(shortcut_key);
+	if (shortcut_key >= Key::KEY_A && shortcut_key <= Key::KEY_Z) {
+		key_event->set_shift_pressed(std::isupper(checkbox.get_shortcut()[0]));
+	}
+
+	Array event_array;
+	event_array.append(key_event);
+
+	Ref<Shortcut> shortcut;
+	shortcut.instantiate();
+	shortcut->set_events(event_array);
+
+	gui_icon_button->set_shortcut(shortcut);
+	gui_icon_button->set_shortcut_feedback(false);
 
 	args.result = gui_icon_button;
 	return ret;
