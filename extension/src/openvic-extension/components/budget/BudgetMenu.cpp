@@ -78,7 +78,7 @@ void BudgetMenu::update_projected_balance() {
 	}
 
 	projected_balance_label.set_text(
-		godot::vformat(
+		Utilities::format(
 			godot::String::utf8("§%s%s§W"),
 			Utilities::get_colour_and_sign(projected_balance),
 			Utilities::cash_to_string_dp_dynamic(projected_balance)
@@ -211,7 +211,7 @@ void BudgetMenu::update() {
 	update_all_projections();
 
 	administrative_efficiency_label.set_text(
-		godot::vformat(
+		Utilities::format(
 			"%s%%",
 			Utilities::fixed_point_to_string_dp(
 				100 * country.get_administrative_efficiency_from_administrators(),

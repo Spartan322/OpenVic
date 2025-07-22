@@ -30,7 +30,7 @@ AdministrationBudget::AdministrationBudget(GUINode const& parent):
 
 	if (budget_label != nullptr) {
 		budget_label->set_tooltip_string(
-			godot::vformat(
+			Utilities::format(
 				"%s\n--------------\n%s",
 				budget_label->tr("DIST_ADMINISTRATION"),
 				budget_label->tr("ADM_DESC")

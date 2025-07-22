@@ -92,6 +92,28 @@ namespace OpenVic::Utilities {
 		godot::Image::Format format = godot::Image::Format::FORMAT_RGBA8
 	);
 
+	template <typename... VarArgs>
+	godot::String format(godot::String const& text_template, const VarArgs... p_args) {
+		extern thread_local memory::vector<godot::Array> _formatting_array_pool;
+		const bool was_empty = _formatting_array_pool.empty();
+		godot::Array args_array = was_empty
+			? godot::Array{}
+			: std::move(_formatting_array_pool.back());
+
+		if (!was_empty) {
+			_formatting_array_pool.pop_back();
+		}
+
+		args_array.resize(sizeof...(p_args));
+		size_t i = 0;
+		// Assign arguments directly using a fold expression
+		([&]() { args_array[i++] = p_args; }(), ...);
+		const godot::String result = text_template % args_array;
+		args_array.clear();
+		_formatting_array_pool.push_back(std::move(args_array));
+		return result;
+	}
+
 	namespace literals {
 		constexpr real_t operator""_real(long double val) { return to_real_t(val); }
 	}
