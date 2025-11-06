@@ -17,6 +17,7 @@
 #include <openvic-simulation/map/State.hpp>
 
 #include "openvic-extension/classes/GUINode.hpp"
+#include "openvic-extension/core/StaticString.hpp"
 
 using namespace godot;
 using namespace OpenVic;
@@ -34,15 +35,11 @@ godot::StringName const& Utilities::get_percentage_value_placeholder() {
 	return value_placeholder;
 }
 godot::StringName const& Utilities::get_colour_and_sign(const fixed_point_t value) {
-	static const godot::StringName green_plus = "G+";
-	static const godot::StringName red = "R";
-	static const godot::StringName yellow = "Y";
-
 	return value > 0
-		? green_plus
+		? OV_SNAME(G_PLUS)
 		: value < 0
-			? red
-			: yellow;
+			? OV_SNAME(R)
+			: OV_SNAME(Y);
 }
 
 /* Int to 2 decimal place string in terms of the largest suffix less than or equal to it,
@@ -291,7 +288,7 @@ godot::String Utilities::get_state_name(godot::Object const& translation_object,
 		name = translation_object.tr(GUINode::format_province_name(Utilities::std_to_godot_string(state.get_capital()->get_identifier())));
 
 		if (!owned) {
-			static const StringName region_key = "REGION_NAME";
+			const StringName region_key = OV_SNAME(REGION_NAME);
 			static const String name_key = "$NAME$";
 
 			String region = translation_object.tr(region_key);
@@ -393,14 +390,12 @@ godot::String Utilities::make_modifier_effect_value(
 
 	// DAYS AND SPEED MUST BE DEFAULT COLOUR!
 	case DAYS: {
-		static const StringName days_localisation_key = "DAYS";
-		result += special_suffix_text + translation_object.tr(days_localisation_key);
+		result += special_suffix_text + translation_object.tr(OV_SNAME(DAYS));
 		break;
 	}
 
 	case SPEED: {
-		static const StringName speed_localisation_key = "KPH";
-		result += special_suffix_text + translation_object.tr(speed_localisation_key);
+		result += special_suffix_text + translation_object.tr(OV_SNAME(KPH));
 		break;
 	}
 

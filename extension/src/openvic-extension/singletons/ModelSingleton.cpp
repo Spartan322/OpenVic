@@ -8,6 +8,7 @@
 #include <openvic-simulation/map/ProvinceInstance.hpp>
 #include <openvic-simulation/utility/Containers.hpp>
 
+#include "openvic-extension/core/StaticString.hpp"
 #include "openvic-extension/singletons/GameSingleton.hpp"
 #include "openvic-extension/core/Bind.hpp"
 #include "openvic-extension/utility/Utilities.hpp"
@@ -122,7 +123,6 @@ Dictionary ModelSingleton::get_model_dict(GFX::Actor const& actor) {
 	}
 
 	static const StringName file_key = "file";
-	static const StringName scale_key = "scale";
 	static const StringName idle_key = "idle";
 	static const StringName move_key = "move";
 	static const StringName attack_key = "attack";
@@ -131,7 +131,7 @@ Dictionary ModelSingleton::get_model_dict(GFX::Actor const& actor) {
 	Dictionary dict;
 
 	dict[file_key] = Utilities::std_to_godot_string(actor.get_model_file());
-	dict[scale_key] = static_cast<real_t>(actor.get_scale());
+	dict[OV_SNAME(scale)] = static_cast<real_t>(actor.get_scale());
 
 	const auto set_animation = [this, &dict](StringName const& key, std::optional<GFX::Actor::Animation> const& animation) {
 		if (animation.has_value()) {
@@ -147,7 +147,6 @@ Dictionary ModelSingleton::get_model_dict(GFX::Actor const& actor) {
 
 	if (!attachments.empty()) {
 		static const StringName attachment_node_key = "node";
-		static const StringName attachment_model_key = "model";
 
 		TypedArray<Dictionary> attachments_array;
 
@@ -170,7 +169,7 @@ Dictionary ModelSingleton::get_model_dict(GFX::Actor const& actor) {
 				Dictionary attachment_dict;
 
 				attachment_dict[attachment_node_key] = Utilities::std_to_godot_string(attachment.get_attach_node());
-				attachment_dict[attachment_model_key] = get_model_dict(*attachment_actor);
+				attachment_dict[OV_SNAME(model)] = get_model_dict(*attachment_actor);
 
 				attachments_array[idx] = std::move(attachment_dict);
 
@@ -204,17 +203,9 @@ bool ModelSingleton::add_unit_dict(
 	GameSingleton const* game_singleton = GameSingleton::get_singleton();
 	ERR_FAIL_NULL_V(game_singleton, false);
 
-	static const StringName culture_key = "culture";
-	static const StringName model_key = "model";
-	static const StringName mount_model_key = "mount_model";
 	static const StringName mount_attach_node_key = "mount_attach_node";
 	static const StringName flag_index_key = "flag_index";
 	static const StringName flag_floating_key = "flag_floating";
-	static const StringName position_key = "position";
-	static const StringName rotation_key = "rotation";
-	static const StringName primary_colour_key = "primary_colour";
-	static const StringName secondary_colour_key = "secondary_colour";
-	static const StringName tertiary_colour_key = "tertiary_colour";
 
 	if (units.empty()) {
 		return true;
@@ -279,15 +270,15 @@ bool ModelSingleton::add_unit_dict(
 
 	Dictionary dict;
 
-	dict[culture_key] = Utilities::std_to_godot_string(graphical_culture_type.get_identifier());
+	dict[OV_SNAME(culture)] = Utilities::std_to_godot_string(graphical_culture_type.get_identifier());
 
-	dict[model_key] = get_model_dict(*actor);
+	dict[OV_SNAME(model)] = get_model_dict(*actor);
 
 	if (!mount_actor_name.empty() && !mount_attach_node_name.empty()) {
 		GFX::Actor const* mount_actor = get_actor(mount_actor_name);
 
 		if (mount_actor != nullptr) {
-			dict[mount_model_key] = get_model_dict(*mount_actor);
+			dict[OV_INAME("mount_model")] = get_model_dict(*mount_actor);
 			dict[mount_attach_node_key] = Utilities::std_to_godot_string(mount_attach_node_name);
 		} else {
 			UtilityFunctions::push_error(Utilities::format(
@@ -307,16 +298,16 @@ bool ModelSingleton::add_unit_dict(
 		dict[flag_floating_key] = true;
 	}
 
-	dict[position_key] =
+	dict[OV_SNAME(position)] =
 		game_singleton->normalise_map_position(unit.get_position()->get_province_definition().get_unit_position());
 
 	if (display_unit_type->get_unit_category() != UnitType::unit_category_t::INFANTRY) {
-		dict[rotation_key] = -0.25f * std::numbers::pi_v<float>;
+		dict[OV_SNAME(rotation)] = -0.25f * std::numbers::pi_v<float>;
 	}
 
-	dict[primary_colour_key] = Utilities::to_godot_color(country_definition.get_primary_unit_colour());
-	dict[secondary_colour_key] = Utilities::to_godot_color(country_definition.get_secondary_unit_colour());
-	dict[tertiary_colour_key] = Utilities::to_godot_color(country_definition.get_tertiary_unit_colour());
+	dict[OV_SNAME(primary_colour)] = Utilities::to_godot_color(country_definition.get_primary_unit_colour());
+	dict[OV_SNAME(secondary_colour)] = Utilities::to_godot_color(country_definition.get_secondary_unit_colour());
+	dict[OV_SNAME(tertiary_colour)] = Utilities::to_godot_color(country_definition.get_tertiary_unit_colour());
 
 	// TODO - move dict into unit_array ?
 	unit_array.push_back(dict);
@@ -392,10 +383,6 @@ bool ModelSingleton::add_building_dict(
 	GameSingleton const* game_singleton = GameSingleton::get_singleton();
 	ERR_FAIL_NULL_V(game_singleton, false);
 
-	static const StringName model_key = "model";
-	static const StringName position_key = "position";
-	static const StringName rotation_key = "rotation";
-
 	std::string suffix;
 
 	if (
@@ -444,14 +431,14 @@ bool ModelSingleton::add_building_dict(
 
 	Dictionary dict;
 
-	dict[model_key] = get_model_dict(*actor);
+	dict[OV_SNAME(model)] = get_model_dict(*actor);
 
-	dict[position_key] = game_singleton->normalise_map_position(
+	dict[OV_SNAME(position)] = game_singleton->normalise_map_position(
 		position_ptr != nullptr ? *position_ptr : province_definition.get_centre()
 	);
 
 	if (rotation != 0.0f) {
-		dict[rotation_key] = rotation;
+		dict[OV_SNAME(rotation)] = rotation;
 	}
 
 	// TODO - move dict into unit_array ?

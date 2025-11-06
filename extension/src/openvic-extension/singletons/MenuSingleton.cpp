@@ -15,6 +15,7 @@
 #include "openvic-extension/classes/GFXPieChartTexture.hpp"
 #include "openvic-extension/classes/GUINode.hpp"
 #include "openvic-extension/components/budget/BudgetMenu.hpp"
+#include "openvic-extension/core/StaticString.hpp"
 #include "openvic-extension/singletons/GameSingleton.hpp"
 #include "openvic-extension/singletons/PlayerSingleton.hpp"
 #include "openvic-extension/core/Bind.hpp"
@@ -419,7 +420,6 @@ static TypedArray<Dictionary> _make_buildings_dict_array(
 	static const StringName building_info_expansion_state_key = "expansion_state";
 	static const StringName building_info_start_date_key = "start_date";
 	static const StringName building_info_end_date_key = "end_date";
-	static const StringName building_info_expansion_progress_key = "expansion_progress";
 
 	/* This system relies on the province buildings all being present in the right order. It will have to
 	 * be changed if we want to support variable combinations and permutations of province buildings. */
@@ -434,7 +434,7 @@ static TypedArray<Dictionary> _make_buildings_dict_array(
 			building_dict[building_info_expansion_state_key] = static_cast<int32_t>(building.get_expansion_state());
 			building_dict[building_info_start_date_key] = Utilities::date_to_string(building.get_start_date());
 			building_dict[building_info_end_date_key] = Utilities::date_to_string(building.get_end_date());
-			building_dict[building_info_expansion_progress_key] = static_cast<real_t>(building.get_expansion_progress());
+			building_dict[OV_INAME("expansion_progress")] = static_cast<real_t>(building.get_expansion_progress());
 
 			buildings_array[idx] = std::move(building_dict);
 		}
@@ -454,8 +454,6 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 	InstanceManager const* instance_manager = game_singleton->get_instance_manager();
 	ERR_FAIL_NULL_V(instance_manager, {});
 
-	static const StringName province_info_province_key = "province";
-	static const StringName province_info_state_key = "state";
 	static const StringName province_info_slave_status_key = "slave_status";
 	static const StringName province_info_colony_status_key = "colony_status";
 	static const StringName province_info_terrain_type_key = "terrain_type";
@@ -464,7 +462,6 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 	static const StringName province_info_controller_key = "controller";
 	static const StringName province_info_controller_tooltip_key = "controller_tooltip";
 	static const StringName province_info_rgo_icon_key = "rgo_icon";
-	static const StringName province_info_rgo_production_tooltip_key = "rgo_production_tooltip";
 	static const StringName province_info_rgo_total_employees_key = "rgo_total_employees";
 	static const StringName province_info_rgo_employment_percentage_key = "rgo_employment_percentage";
 	static const StringName province_info_rgo_employment_tooltip_key = "rgo_employment_tooltip";
@@ -475,7 +472,6 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 	static const StringName province_info_total_population_key = "total_population";
 	static const StringName province_info_pop_types_key = "pop_types";
 	static const StringName province_info_pop_ideologies_key = "pop_ideologies";
-	static const StringName province_info_pop_cultures_key = "pop_cultures";
 	static const StringName province_info_cores_key = "cores";
 	static const StringName province_info_buildings_key = "buildings";
 
@@ -485,11 +481,11 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 	}
 	Dictionary ret;
 
-	ret[province_info_province_key] = Utilities::std_to_godot_string(province->get_identifier());
+	ret[OV_SNAME(province)] = Utilities::std_to_godot_string(province->get_identifier());
 
 	State const* state = province->get_state();
 	if (state != nullptr) {
-		ret[province_info_state_key] = Utilities::get_state_name(*this,*state);
+		ret[OV_SNAME(state)] = Utilities::get_state_name(*this,*state);
 	}
 
 	ret[province_info_slave_status_key] = province->get_slave();
@@ -500,16 +496,14 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 	if (terrain_type != nullptr) {
 		String terrain_type_string = Utilities::std_to_godot_string(terrain_type->get_identifier());
 
-		static const StringName terrain_type_localisation_key = "PROVINCEVIEW_TERRAIN";
 		static const String terrain_type_replace_key = "$TERRAIN$";
-		static const StringName movement_cost_localisation_key = "TERRAIN_MOVEMENT_COST";
 		static const String terrain_type_template_string = "%s" + get_tooltip_separator() + "%s" +
 			GUILabel::get_colour_marker() + "Y%s" + GUILabel::get_colour_marker() + "!%s";
 
 		ret[province_info_terrain_type_tooltip_key] = Utilities::format(
 			terrain_type_template_string,
-			tr(terrain_type_localisation_key).replace(terrain_type_replace_key, tr(terrain_type_string)),
-			tr(movement_cost_localisation_key),
+			tr(OV_INAME("PROVINCEVIEW_TERRAIN")).replace(terrain_type_replace_key, tr(terrain_type_string)),
+			tr(OV_INAME("TERRAIN_MOVEMENT_COST")),
 			Utilities::fixed_point_to_string_dp(terrain_type->get_movement_cost(), 2),
 			_make_modifier_effects_tooltip(*terrain_type)
 		);
@@ -840,7 +834,7 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 		const fixed_point_t base_output = production_type.get_base_output_quantity();
 		const fixed_point_t max_output = base_output * throughput_efficiency * output_efficiency;
 
-		ret[province_info_rgo_production_tooltip_key] = Utilities::format(
+		ret[OV_INAME("rgo_production_tooltip")] = Utilities::format(
 			rgo_production_template_string,
 			tr(rgo_production_localisation_key).replace(
 				rgo_good_replace_key, tr(Utilities::std_to_godot_string(rgo_good.get_identifier()))
@@ -862,28 +856,22 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 			throughput_string
 		);
 
-		static const StringName employment_localisation_key = "PROVINCEVIEW_EMPLOYMENT";
-		static const StringName employee_count_localisation_key = "PRODUCTION_FACTORY_EMPLOYEECOUNT_TOOLTIP2";
-		static const String employee_replace_key = "$EMPLOYEES$";
-		static const String employee_max_replace_key = "$EMPLOYEE_MAX$";
-		static const StringName rgo_workforce_localisation_key = "BASE_RGO_SIZE";
-		static const StringName province_size_localisation_key = "FROM_PROV_SIZE";
 		static const String rgo_employment_template_string = "%s" + get_tooltip_separator() + "%s%s\n%s%d\n%s\n%s" +
 			GUILabel::get_colour_marker() + "G%d";
 
 		ret[province_info_rgo_employment_tooltip_key] = Utilities::format(
 			rgo_employment_template_string,
-			tr(employment_localisation_key).replace(Utilities::get_long_value_placeholder(), {}),
-			tr(employee_count_localisation_key).replace(
-				employee_replace_key, String::num_int64(rgo.get_total_employees_count_cache())
+			tr(OV_INAME("PROVINCEVIEW_EMPLOYMENT")).replace(Utilities::get_long_value_placeholder(), {}),
+			tr(OV_INAME("PRODUCTION_FACTORY_EMPLOYEECOUNT_TOOLTIP2")).replace(
+				OV_INAME("$EMPLOYEES$"), String::num_int64(rgo.get_total_employees_count_cache())
 			).replace(
-				employee_max_replace_key, String::num_int64(rgo.get_max_employee_count_cache())
+				OV_INAME("$EMPLOYEE_MAX$"), String::num_int64(rgo.get_max_employee_count_cache())
 			),
 			amount_of_employees_by_pop_type,
-			tr(rgo_workforce_localisation_key),
+			tr(OV_INAME("BASE_RGO_SIZE")),
 			production_type.get_base_workforce_size(),
 			size_string,
-			tr(province_size_localisation_key),
+			tr(OV_INAME("FROM_PROV_SIZE")),
 			static_cast<int32_t>(rgo.get_size_multiplier()) // TODO - remove cast once variable is an int32_t
 		);
 	}
@@ -922,7 +910,7 @@ Dictionary MenuSingleton::get_province_info_from_number(int32_t province_number)
 	GFXPieChartTexture::godot_pie_chart_data_t cultures =
 		GFXPieChartTexture::distribution_to_slices_array(province->get_population_by_culture(), make_pie_chart_tooltip);
 	if (!cultures.is_empty()) {
-		ret[province_info_pop_cultures_key] = std::move(cultures);
+		ret[OV_INAME("pop_cultures")] = std::move(cultures);
 	}
 
 	ordered_set<CountryInstance*> const& cores = province->get_cores();
@@ -1165,15 +1153,11 @@ Dictionary MenuSingleton::get_topbar_info() const {
 	ret[regiment_count_key] = static_cast<uint64_t>(country->get_regiment_count());
 	ret[max_supported_regiments_key] = static_cast<uint64_t>(country->get_max_supported_regiment_count());
 
-	static const StringName is_mobilised_key = "is_mobilised";
-	static const StringName mobilisation_regiments_key = "mobilisation_regiments";
-	static const StringName mobilisation_impact_tooltip_key = "mobilisation_impact_tooltip";
-
 	if (country->is_mobilised()) {
-		ret[is_mobilised_key] = true;
+		ret[OV_SNAME(is_mobilised)] = true;
 	} else {
-		ret[mobilisation_regiments_key] = static_cast<uint64_t>(country->get_mobilisation_potential_regiment_count());
-		ret[mobilisation_impact_tooltip_key] = _make_mobilisation_impact_tooltip();
+		ret[OV_INAME("mobilisation_regiments")] = static_cast<uint64_t>(country->get_mobilisation_potential_regiment_count());
+		ret[OV_SNAME(mobilisation_impact_tooltip)] = _make_mobilisation_impact_tooltip();
 	}
 
 	{

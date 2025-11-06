@@ -6,6 +6,7 @@
 #include "openvic-extension/classes/GUILabel.hpp"
 #include "openvic-extension/classes/GUINode.hpp"
 #include "openvic-extension/classes/GUIScrollbar.hpp"
+#include "openvic-extension/core/StaticString.hpp"
 #include "openvic-extension/singletons/PlayerSingleton.hpp"
 #include "openvic-extension/utility/Utilities.hpp"
 
@@ -79,13 +80,11 @@ void TariffBudget::update_slider_tooltip(
 	CountryInstance& country,
 	const fixed_point_t scaled_value
 ) {
-	static const godot::StringName tooltip_template = "%s\n%s\n--------------\n%s\n%s";
-	static const godot::StringName green = "G";
-	static const godot::StringName red = "R";
+	static const godot::StringName tooltip_template = OV_INAME("%s\n%s\n--------------\n%s\n%s");
 	//Yes Victoria 2 overrides the colour specified in localisation...
 	godot::StringName const& prefix = scaled_value < 0
-		? red
-		: green;
+		? OV_SNAME(R)
+		: OV_SNAME(G);
 
 	slider_tooltip_args[0] = slider.tr(slider_tooltip_localisation_key).replace(
 		"Y"+Utilities::get_short_value_placeholder(),
