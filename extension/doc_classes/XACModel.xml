@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XACModel" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_node" qualifiers="const">
+			<return type="Node3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh" qualifiers="const">
+			<return type="XACMesh" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_mesh_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="push_mesh">
+			<return type="int" />
+			<param index="0" name="mesh" type="XACMesh" />
+			<description>
+			</description>
+		</method>
+		<method name="set_mesh">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="mesh" type="XACMesh" />
+			<description>
+			</description>
+		</method>
+		<method name="set_mesh_list">
+			<return type="void" />
+			<param index="0" name="mesh_list" type="XACMesh[]" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

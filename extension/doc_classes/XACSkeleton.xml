@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XACSkeleton" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_bone">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="clear_bones">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="generate_skeleton" qualifiers="const">
+			<return type="Skeleton3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_parent" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_pose" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="bone" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_parent">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="parent_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_pose">
+			<return type="void" />
+			<param index="0" name="bone" type="int" />
+			<param index="1" name="pose" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

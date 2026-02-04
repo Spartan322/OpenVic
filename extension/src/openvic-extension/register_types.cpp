@@ -24,6 +24,7 @@
 #include "openvic-extension/classes/MapMesh.hpp"
 #include "openvic-extension/classes/resources/StyleBoxWithSound.hpp"
 #include "openvic-extension/core/register_core_types.hpp"
+#include "openvic-extension/scene/register_scene_types.hpp"
 #include "openvic-extension/singletons/AssetManager.hpp"
 #include "openvic-extension/singletons/Checksum.hpp"
 #include "openvic-extension/singletons/CursorSingleton.hpp"
@@ -57,6 +58,7 @@ void initialize_openvic_types(ModuleInitializationLevel p_level) {
 	}
 
 	register_core_types();
+	register_scene_types();
 
 	ClassDB::register_class<GitInfo>();
 	_git_info_singleton = memnew(GitInfo);
@@ -174,7 +176,12 @@ void uninitialize_openvic_types(ModuleInitializationLevel p_level) {
 	Engine::get_singleton()->unregister_singleton("PlayerSingleton");
 	memdelete(_player_singleton);
 
+	unregister_scene_types();
 	unregister_core_types();
+}
+
+void startup_openvic_loop() {
+	startup_scene_loop();
 }
 
 extern "C" {
@@ -187,6 +194,7 @@ extern "C" {
 
 		init_obj.register_initializer(initialize_openvic_types);
 		init_obj.register_terminator(uninitialize_openvic_types);
+		init_obj.register_startup_callback(startup_openvic_loop);
 		init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
 
 		return init_obj.init();

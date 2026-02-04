@@ -7,6 +7,8 @@
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
 
 #include <openvic-simulation/utility/Containers.hpp>
 
@@ -31,56 +33,136 @@ namespace OpenVic::efx {
 	};
 
 	template<typename T>
-	_FORCE_INLINE_ godot::Error read_struct(godot::Ref<godot::FileAccess> const& file, T& t) {
-		if (file->get_length() - file->get_position() < sizeof(T)) {
-			return godot::ERR_FILE_CANT_READ;
+	_FORCE_INLINE_ void read_struct(godot::Ref<godot::FileAccess> const& file, T& t, godot::Error* error) {
+		if (error) {
+			*error = godot::ERR_FILE_CANT_READ;
 		}
-		uint64_t res = file->get_buffer(reinterpret_cast<uint8_t*>(&t), sizeof(t)) == sizeof(t);
-		return res != 0 ? godot::OK : godot::FAILED;
+
+		ERR_FAIL_COND_MSG(
+			file->get_length() - file->get_position() < sizeof(T),
+			godot::vformat("Cannot read struct size of %d, reads past end of file", sizeof(T))
+		);
+
+		uint64_t res = file->get_buffer(reinterpret_cast<uint8_t*>(&t), sizeof(t));
+
+		if (error) {
+			*error = godot::ERR_INVALID_DATA;
+		}
+		ERR_FAIL_COND(res != sizeof(t));
+
+		godot::Error err = file->get_error();
+		if (error) {
+			*error = err;
+		}
+		ERR_FAIL_COND_MSG(err != godot::OK, "Failed to read file buffer");
+	}
+
+	template<typename T>
+	_FORCE_INLINE_ T read_struct(godot::Ref<godot::FileAccess> const& file, godot::Error* error) {
+		T result;
+		read_struct(file, result, error);
+		return result;
 	}
 
 	// Warning: works on the assumption of it being a packed struct being loaded into the array
 	template<typename T, typename Alloc>
-	_FORCE_INLINE_ godot::Error	read_struct_array( //
-		godot::Ref<godot::FileAccess> const& file, std::vector<T, Alloc>& t, uint32_t size
+	_FORCE_INLINE_ void read_struct_array( //
+		godot::Ref<godot::FileAccess> const& file, std::vector<T, Alloc>& t, uint32_t size, godot::Error* error
 	) {
-		if (file->get_length() - file->get_position() < size * sizeof(T)) {
-			return godot::ERR_FILE_CANT_READ;
+		if (error) {
+			*error = godot::ERR_FILE_CANT_READ;
 		}
+
+		ERR_FAIL_COND_MSG(
+			file->get_length() - file->get_position() < size * sizeof(T),
+			godot::vformat("Cannot read struct array length of %d, reads past end of file", size * sizeof(T))
+		);
+
 		t.resize(size * sizeof(T));
-		uint64_t res = file->get_buffer(reinterpret_cast<uint8_t*>(t.data()), sizeof(T) * size) == sizeof(t);
-		return res != 0 ? godot::OK : godot::FAILED;
+		uint64_t res = file->get_buffer(reinterpret_cast<uint8_t*>(t.data()), sizeof(T) * size);
+
+		if (error) {
+			*error = godot::ERR_INVALID_DATA;
+		}
+		ERR_FAIL_COND(res != sizeof(T) * size);
+
+		godot::Error err = file->get_error();
+		if (error) {
+			*error = err;
+		}
+		ERR_FAIL_COND_MSG(err != godot::OK, "Failed to read file buffer");
 	}
 
-	static bool read_string(godot::Ref<godot::FileAccess> const& file, godot::String& str, bool replace_chars = true) {
-		// string = uint32 len, char[len]
-		uint32_t length = file->get_32();
-		if (file->get_length() - file->get_position() < length) {
-			return false;
+	static void	read_string( //
+		godot::Ref<godot::FileAccess> const& file, godot::String& str, godot::Error* error, bool replace_chars = true
+	) {
+		if (error) {
+			*error = godot::ERR_FILE_CANT_READ;
 		}
 
-		str = file->get_buffer(length).get_string_from_ascii();
+		// string = uint32 len, char[len]
+		uint32_t length = file->get_32();
+		ERR_FAIL_COND_MSG(
+			file->get_length() - file->get_position() < length,
+			godot::vformat("Cannot read string length of %d, reads past end of file", length)
+		);
+
+		godot::PackedByteArray array;
+		array.resize(length);
+		uint64_t res = file->get_buffer(array.ptrw(), length);
+
+		if (error) {
+			*error = godot::ERR_INVALID_DATA;
+		}
+		ERR_FAIL_COND(res != array.size());
+
+		godot::Error err = file->get_error();
+		if (error) {
+			*error = err;
+		}
+		ERR_FAIL_COND_MSG(err != godot::OK, "Failed to read file buffer");
+
+		str = array.get_string_from_ascii();
 		if (replace_chars) {
 			str = str.replace(":", "_");
 			str = str.replace("\\", "_");
 			str = str.replace("/", "_");
 		}
-		return true;
 	}
 
 #pragma pack(push, 1)
-	template<typename SelfT>
-	struct readable_struct_t {
-		_FORCE_INLINE_ godot::Error read_from(godot::Ref<godot::FileAccess> const& file) {
-			return read_struct<SelfT>(file, *this);
-		}
-	};
-
-	struct chunk_header_t : readable_struct_t<chunk_header_t> {
+	struct chunk_header_t {
 		Type type;
 		int32_t length;
 		Version version;
 	};
+
+	_FORCE_INLINE_ chunk_header_t read_chunk_header(godot::Ref<godot::FileAccess> const& file, godot::Error* error) {
+		chunk_header_t header; // NOLINT(cppcoreguidelines-pro-type-member-init)
+
+		if (error) {
+			*error = godot::ERR_FILE_CANT_READ;
+		}
+
+		if (file->get_length() - file->get_position() < sizeof(chunk_header_t)) {
+			return header;
+		}
+
+		uint64_t res = file->get_buffer(reinterpret_cast<uint8_t*>(&header), sizeof(header));
+
+		if (error) {
+			*error = godot::ERR_INVALID_DATA;
+		}
+		ERR_FAIL_COND_V(res != sizeof(header), header);
+
+		godot::Error err = file->get_error();
+		if (error) {
+			*error = err;
+		}
+		ERR_FAIL_COND_V_MSG(err != godot::OK, header, "Failed to read file buffer");
+
+		return header;
+	}
 
 	struct vec2d_t {
 		float x;

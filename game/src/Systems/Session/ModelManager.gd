@@ -8,8 +8,6 @@ extends Node3D
 const MODEL_SCALE : float = 1.0 / 256.0
 
 func generate_units() -> void:
-	ModelSingleton.setup_flag_shader()
-
 	for unit : Dictionary in ModelSingleton.get_units():
 		_generate_unit(unit)
 
@@ -43,10 +41,10 @@ func _generate_unit(unit_dict : Dictionary) -> void:
 
 	var flag_dict : Dictionary = ModelSingleton.get_flag_model(unit_dict.get(flag_floating_key, false))
 	if flag_dict:
-		var flag_model : UnitModel = _generate_model(flag_dict, "", true)
+		var flag_model : MapInstance3D = _generate_model(flag_dict, "", true)
 		if flag_model:
-			flag_model.set_flag_index(unit_dict[flag_index_key])
-			flag_model.current_anim = UnitModel.Anim.IDLE
+			flag_model.set_flag_index_override(unit_dict[flag_index_key])
+			flag_model.current_animation = &"idle"
 			flag_model.scale /= model.scale
 			flag_model.rotate_y(-rotation)
 
@@ -56,12 +54,11 @@ func _generate_unit(unit_dict : Dictionary) -> void:
 	model.rotate_y(PI + rotation)
 	model.set_position(_map_view._map_to_world_coords(unit_dict[position_key]) + Vector3(0, 0.1 * MODEL_SCALE, 0))
 
-	if model is UnitModel:
-		model.current_anim = UnitModel.Anim.IDLE
-
-		model.primary_colour = unit_dict[primary_colour_key]
-		model.secondary_colour = unit_dict[secondary_colour_key]
-		model.tertiary_colour = unit_dict[tertiary_colour_key]
+	if model is MapInstance3D:
+		model.current_animation = &"idle"
+		model.set_colour_index_override(0, unit_dict[primary_colour_key])
+		model.set_colour_index_override(1, unit_dict[secondary_colour_key])
+		model.set_colour_index_override(2, unit_dict[tertiary_colour_key])
 
 	_units.add_child(model)
 
@@ -105,27 +102,34 @@ func _generate_model(model_dict : Dictionary, culture : String = "", is_unit : b
 		# Currently needs UnitModel's attach_model helper function
 		or attachments_key in model_dict
 	)
-	var model : Node3D = ModelSingleton.get_xac_model(model_dict[file_key], is_unit)
-	if not model:
+	var xac_model : XACModel =  ResourceLoader.load(model_dict[file_key], "UnitModel" if is_unit else "XACModel")
+	if not xac_model:
 		return null
+	var model : Node3D = xac_model.generate_node()
 	model.scale *= model_dict[scale_key]
 
-	if model is UnitModel:
+	if model is MapInstance3D:
 		# Animations
 		var idle_dict : Dictionary = model_dict.get(idle_key, {})
 		if idle_dict:
-			model.set_idle_anim(ModelSingleton.get_xsm_animation(idle_dict[animation_file_key]))
-			model.scroll_speed_idle = idle_dict[animation_time_key]
+			var animation : Animation = ResourceLoader.load(idle_dict[animation_file_key], "Animation")
+			if animation:
+				model.add_animation("idle", animation)
+				model.set_texture_animation_scroll_override("idle", idle_dict[animation_time_key])
 
 		var move_dict : Dictionary = model_dict.get(move_key, {})
 		if move_dict:
-			model.set_move_anim(ModelSingleton.get_xsm_animation(move_dict[animation_file_key]))
-			model.scroll_speed_move = move_dict[animation_time_key]
+			var animation : Animation = ResourceLoader.load(move_dict[animation_file_key], "Animation")
+			if animation:
+				model.add_animation("move", animation)
+				model.set_texture_animation_scroll_override("move", move_dict[animation_time_key])
 
 		var attack_dict : Dictionary = model_dict.get(attack_key, {})
 		if attack_dict:
-			model.set_attack_anim(ModelSingleton.get_xsm_animation(attack_dict[animation_file_key]))
-			model.scroll_speed_attack = attack_dict[animation_time_key]
+			var animation : Animation = ResourceLoader.load(attack_dict[animation_file_key], "Animation")
+			if animation:
+				model.add_animation("attack", animation)
+				model.set_texture_animation_scroll_override("attack", attack_dict[animation_time_key])
 
 		# Attachments
 		for attachment_dict : Dictionary in model_dict.get(attachments_key, []):
@@ -135,7 +139,8 @@ func _generate_model(model_dict : Dictionary, culture : String = "", is_unit : b
 
 		if culture:
 			const gun_bone_name : String = "GunNode"
-			if model.has_bone(gun_bone_name):
+			var skeleton : Skeleton3D = model.get_skeleton()
+			if skeleton and skeleton.find_bone(gun_bone_name) != -1:
 				var gun_dict : Dictionary = ModelSingleton.get_cultural_gun_model(culture)
 				if gun_dict:
 					var gun_model : Node3D = _generate_model(gun_dict, culture)
@@ -143,7 +148,7 @@ func _generate_model(model_dict : Dictionary, culture : String = "", is_unit : b
 						gun_model.free()
 
 			const helmet_bone_name : String = "HelmetNode"
-			if model.has_bone(helmet_bone_name):
+			if skeleton and skeleton.find_bone(helmet_bone_name) != -1:
 				var helmet_dict : Dictionary = ModelSingleton.get_cultural_helmet_model(culture)
 				if helmet_dict:
 					var helmet_model : Node3D = _generate_model(helmet_dict, culture)

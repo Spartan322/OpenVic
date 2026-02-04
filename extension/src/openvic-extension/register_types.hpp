@@ -4,3 +4,4 @@
 
 void initialize_openvic_types(godot::ModuleInitializationLevel);
 void uninitialize_openvic_types(godot::ModuleInitializationLevel);
+void startup_openvic_loop();

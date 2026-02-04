@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MapInstance3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_animation">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="animation" type="Animation" />
+			<description>
+			</description>
+		</method>
+		<method name="attach_model">
+			<return type="int" enum="Error" />
+			<param index="0" name="bone_name" type="StringName" />
+			<param index="1" name="instance" type="Node3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_animation" qualifiers="const">
+			<return type="Animation" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="get_animation_player" qualifiers="const">
+			<return type="AnimationPlayer" />
+			<description>
+			</description>
+		</method>
+		<method name="get_colour_from_index" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_flag_index" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_animation_scroll" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="animation" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_animation">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="reset_flag_index">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="set_colour_index_override">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="set_flag_index_override">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_texture_animation_scroll_override">
+			<return type="void" />
+			<param index="0" name="animation" type="StringName" />
+			<param index="1" name="scroll" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="update_shader_data">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="current_animation" type="StringName" setter="set_current_animation" getter="get_current_animation" default="&amp;&quot;&quot;">
+		</member>
+	</members>
+</class>
